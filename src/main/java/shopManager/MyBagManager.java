@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import exceptions.NoEnoughStock;
 import exceptions.NotInStock;
+import exceptions.NotInBag;
 import exceptions.UnknownRepo;
 import model.MyOrder;
 import model.Order;
@@ -21,7 +22,7 @@ import model.Product;
 import persistency.OrderRepository;
 import shopmanager.StockManager;
 /**
- * @author Isabel Rom�n
+ * @author Isabel Rom�n, Antonio Delgado Bejarano
  *
  */
 public class MyBagManager implements BagManager {
@@ -77,7 +78,7 @@ public class MyBagManager implements BagManager {
 	}
 
 	@Override
-	public void removeProduct(String productId)throws NotInStock {
+	public void removeProduct(String productId) throws NotInStock, NotInBag {
 		String msg="El id del producto a eliminar es "+productId;
 		trazador.info(msg);
 
@@ -86,18 +87,24 @@ public class MyBagManager implements BagManager {
 			// Con el id obtiene el producto de la cesta
 			Product producto = cesta.get(productId);
 			
-			// Añade al stock las unidades del producto que vamos a eliminar de la cesta
-			stock.addProduct(producto);
+			// Verifica que el producto existe en el stock para añadirlo al mismo, en caso contrario lanza una excepción NotInStock
+			if (stock.searchProduct(productId) != null) {
 			
-			// Elimina de la cesta el producto con esa id concreta
-			cesta.remove(productId);	
-
+				// Añade al stock las unidades del producto que vamos a eliminar de la cesta
+				stock.addProduct(producto);
+			
+				// Elimina de la cesta el producto con esa id concreta
+				cesta.remove(productId);	
+			
+			}else {
+				throw new NotInStock(productId);
+			}
 		}
 		
-		// Si no encuentra en la cesta ningún producto con esa id lanza una excepción NonInStock
+		// Si no encuentra en la cesta ningún producto con esa id lanza una excepción NotInBag
 		else {
 			
-			throw new NotInStock(productId);		
+			throw new NotInBag(productId);		
 		}
 	}
 
